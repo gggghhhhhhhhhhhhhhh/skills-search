@@ -23,7 +23,7 @@ git clone https://github.com/gggghhhhhhhhhhhhhhh/skills-search.git `
 ## 使用方式
 
 > **"使用 $skills-search 搜索视频制作"**
-> **"用 GitHub Skills Search 搜一下数据分析"**
+> **"使用 $skills-search 搜索数据分析"**
 
 ### 交互流程
 

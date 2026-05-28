@@ -1,7 +1,7 @@
 ---
 name: skills-search
 description: >
-  Search GitHub for AI agent Skills (skills, plugins, MCP tools) by keyword.
+  Search GitHub for AI agent Skills by keyword (skills, plugins, MCP tools) by keyword.
   Use when the user wants to: (1) get a quick overview of Skills projects on GitHub for any domain,
   (2) see two ranking tables — all-time Top 30 and recent-month Top 30,
   (3) discover trending Skills projects with star growth metrics.
@@ -147,7 +147,7 @@ After all steps complete, load the **audit skill** to verify execution:
 
 ```powershell
 # Load audit checklist
-$auditPath = "$PSScriptRoot\audit\SKILL.csv"
+$auditPath = "$PSScriptRoot\audit\SKILL.md"
 if (Test-Path $auditPath) {
     # Follow audit instructions to verify all steps
 }
