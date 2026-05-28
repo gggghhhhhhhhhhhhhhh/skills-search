@@ -96,7 +96,7 @@ Filter: stars >= 10. Sort by **star总数** descending. Take top 30.
 Save to a Markdown file:
 
 ```powershell
-$mdPath = "$env:TEMP\github-skills-search-总表.md"
+$mdPath = "(Get-Location).Path\github-skills-search-总表.md"
 "# 🏆 总表 — $keyword Skills（按 Star 总数排名）" | Out-File $mdPath -Encoding utf8
 "" | Out-File $mdPath -Encoding utf8 -Append
 "| Rank | Project | 发布天数 | Star总数 | 平均⭐/天 | 最近更新 | 项目地址 |" | Out-File $mdPath -Encoding utf8 -Append
@@ -121,7 +121,7 @@ Filter: stars >= 10 AND created within last 30 days. Sort by **star总数** desc
 Save to a Markdown file:
 
 ```powershell
-$mdPath2 = "$env:TEMP\github-skills-search-新发布表.md"
+$mdPath2 = "(Get-Location).Path\github-skills-search-新发布表.md"
 "# 🆕 新发布Skill表 — $keyword Skills（近 1 个月）" | Out-File $mdPath2 -Encoding utf8
 # ... same format
 ```
