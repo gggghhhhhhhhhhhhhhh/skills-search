@@ -93,52 +93,41 @@ Metrics: **发布天数** (days since creation), **star总数** (total stars), *
 
 Filter: stars >= 10. Sort by **star总数** descending. Take top 30.
 
-Save to a Markdown file:
+Save as CSV:
 
 ```powershell
-$mdPath = "(Get-Location).Path\github-skills-search-总表.md"
-"# 🏆 总表 — $keyword Skills（按 Star 总数排名）" | Out-File $mdPath -Encoding utf8
-"" | Out-File $mdPath -Encoding utf8 -Append
-"| Rank | Project | 发布天数 | Star总数 | 平均⭐/天 | 最近更新 | 项目地址 |" | Out-File $mdPath -Encoding utf8 -Append
-"|------|---------|---------|---------|----------|---------|---------|" | Out-File $mdPath -Encoding utf8 -Append
-# ... append each row
+$csvPath = "$(Get-Location)\github-skills-search-总表-$keyword.csv"
+"Rank,Project,发布天数,Star总数,平均⭐/天,最近更新,项目地址" | Out-File $csvPath -Encoding utf8
+$i=0; foreach ($item in $sortedAll) { $i++; $c=[DateTime]$item.created_at; $u=[DateTime]$item.updated_at
+  $days=[Math]::Floor(($now-$c).TotalDays); $d2=[Math]::Max(1,$days); $spd=[Math]::Round($item.stargazers_count/$d2,2)
+  "$i,$($item.full_name),$days 天,$($item.stargazers_count),$spd,$($u.ToString('yyyy-MM-dd')),$($item.html_url)" | Out-File $csvPath -Encoding utf8 -Append }
 ```
 
-Then output the same table in the dialog:
+Then show the same table in dialog:
 
 ```
-📄 **总表已保存至**: `$mdPath`
+📄 **总表已保存至**: `$csvPath`
 
 | Rank | Project | 发布天数 | Star总数 | 平均⭐/天 | 最近更新 | 项目地址 |
-|------|---------|---------|---------|----------|---------|---------|
-| 1 | ... | ... | ... | ... | ... | ... |
 ```
 
 ### Step 7: Generate Table B — 新发布Skill表 (Recent-month Top 30)
 
 Filter: stars >= 10 AND created within last 30 days. Sort by **star总数** descending. Take top 30.
 
-Save to a Markdown file:
+Save as CSV:
 
 ```powershell
-$mdPath2 = "(Get-Location).Path\github-skills-search-新发布表.md"
-"# 🆕 新发布Skill表 — $keyword Skills（近 1 个月）" | Out-File $mdPath2 -Encoding utf8
-# ... same format
+$csvPath2 = "$(Get-Location)\github-skills-search-新发布表-$keyword.csv"
+"Rank,Project,发布天数,Star总数,平均⭐/天,最近更新,项目地址" | Out-File $csvPath2 -Encoding utf8
+$i=0; foreach ($item in $sortedNew) { $i++; $c=[DateTime]$item.created_at; $u=[DateTime]$item.updated_at
+  $days=[Math]::Floor(($now-$c).TotalDays); $d2=[Math]::Max(1,$days); $spd=[Math]::Round($item.stargazers_count/$d2,2)
+  "$i,$($item.full_name),$days 天,$($item.stargazers_count),$spd,$($u.ToString('yyyy-MM-dd')),$($item.html_url)" | Out-File $csvPath2 -Encoding utf8 -Append }
 ```
 
-Then output the same table in the dialog:
+Then show in dialog.
 
-```
-📄 **新发布Skill表已保存至**: `$mdPath2`
-
-| Rank | Project | 发布天数 | Star总数 | 平均⭐/天 | 最近更新 | 项目地址 |
-|------|---------|---------|---------|----------|---------|---------|
-| 1 | ... | ... | ... | ... | ... | ... |
-```
-
-**Note:** Both tables are saved as .md files AND shown in the dialog. The .md files serve as persistent records.
-
-### Step 8: Sort toggle
+**Note:** Both tables are saved as .csv files AND shown in the dialog.### Step 8: Sort toggle
 
 After displaying both tables, offer:
 
@@ -158,7 +147,7 @@ After all steps complete, load the **audit skill** to verify execution:
 
 ```powershell
 # Load audit checklist
-$auditPath = "$PSScriptRoot\audit\SKILL.md"
+$auditPath = "$PSScriptRoot\audit\SKILL.csv"
 if (Test-Path $auditPath) {
     # Follow audit instructions to verify all steps
 }
@@ -168,7 +157,7 @@ The audit skill is located at the `audit/` subdirectory within this skill. Load 
 
 ## Notes
 
-- Both tables are output in the dialog AND saved as .md files.
+- Both tables are output in the dialog AND saved as .csv files.
 - Always respect the quality gate (stars >= 10).
 - Cache results by keyword within a session.
-- Use Markdown table format for all output.
+- Use CSV table format for all output.
