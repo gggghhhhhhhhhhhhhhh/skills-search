@@ -1,14 +1,14 @@
-# GitHub Skills Search
+﻿# GitHub Skills Search
 
 快速了解 GitHub 上某个领域相关的 Skill 项目概况。只需输入一个关键词，即可获取两份排名表。
 
 ## 功能
 
 - **输入关键词**，搜索 GitHub 上该领域的 Skill 项目
-- **总表**：按 Star 总数排名 Top 30（质量门槛 ≥ 10⭐）
-- **新发布Skill表**：近 1 个月内发布的项目 Top 30（质量门槛 ≥ 10⭐）
+- **总表**：按 Star 总数排名 Top 30（质量门槛 ≥ 10⭐），保存为 CSV
+- **新发布Skill表**：近 1 个月内发布的项目 Top 30（质量门槛 ≥ 10⭐），保存为 CSV
 - 数据指标：发布天数、Star 总数、平均每天 Star 数、最近更新日期、项目地址
-- 每张表均**保存为 .csv 文件**并在**对话框同步显示**
+- 每张表均**保存为 .csv 文件到当前工作目录**，并在对话框同步显示
 - 排序切换：Star总数 / 平均⭐/天 / 最近更新 / 最新发布
 - 用户反馈：可标记不相关项目，本会话内自动排除
 - 🔍 **内置审查 Skill**：执行完毕后自动审计，确保每一步完整执行
@@ -30,9 +30,20 @@ git clone https://github.com/gggghhhhhhhhhhhhhhh/github-skills-search.git `
 1. 你输入一个关键词
 2. 搜索 GitHub → 去重 → 过滤（≥ 10⭐）→ 计算指标
 3. 输出 **总表**（All-time Top 30）+ **新发布Skill表**（近 1 月 Top 30）
-4. 每张表同步保存为 .md 文件
+4. CSV 文件自动保存到**当前工作目录**，同时在对话框展示
 5. 可切换排序、标记不相关项目
 6. 🔍 自动运行审查 Skill，验证所有步骤
+
+### 输出示例
+
+运行后在当前目录生成：
+
+```
+github-skills-search-总表-视频制作.csv
+github-skills-search-新发布表-视频制作.csv
+```
+
+CSV 文件可用 Excel 直接打开。
 
 ## 文件结构
 
