@@ -4,7 +4,7 @@
 
 ## 功能
 
-- 按任意关键词搜索 GitHub Skills（如 single-cell、NLP、CV、ecology、drug-discovery 等）
+- 按任意关键词搜索 GitHub Skills（如科学写作、数据分析、工具开发、视频制作等）
 - 多查询去重合并，覆盖更全
 - Top 30 排名表：Stars + ⭐/天增速 + Topics + 最近活跃度
 - 🔥 Rising Stars 检测：近 1 月创建且增速超过中位线的潜力项目
@@ -25,9 +25,9 @@ git clone https://github.com/gggghhhhhhhhhhhhhhh/github-skills-search.git `
 
 在对话中触发：
 
-> **"使用 $github-skills-search 搜索 drug-discovery 相关的 Skills"**
-> **"用 GitHub Skills Search 帮我搜一下 ecology 领域"**
-> **"Use $github-skills-search to find NLP agent skills on GitHub"**
+> **"使用 $github-skills-search 搜索工具开发相关的 Skills"**
+> **"用 GitHub Skills Search 帮我搜一下数据分析领域"**
+> **"Use $github-skills-search to find video production agent skills"**
 
 ### 交互流程
 
