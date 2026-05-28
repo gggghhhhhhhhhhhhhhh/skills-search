@@ -1,19 +1,17 @@
-﻿# GitHub Skills Search
+# GitHub Skills Search
 
-一个 Codex Skill，用于在 GitHub 上发现并排名 AI Agent Skills 项目。
+快速了解 GitHub 上某个领域相关的 Skill 项目概况。只需输入一个关键词，即可获取两份排名表。
 
 ## 功能
 
-- 按任意关键词搜索 GitHub Skills（如科学写作、数据分析、工具开发、视频制作等）
-- 多查询去重合并，覆盖更全
-- Top 30 排名表：Stars + ⭐/天增速 + 创建日期 + Topics + 最近活跃度
-- 🔥 Rising Stars 检测：近 1 月创建且增速超过中位线的潜力项目
-- 研究相关性过滤（宽松/严格两档）
-- Stars 质量门槛（≥ 10）
-- 会话级缓存（同一关键词 5 分钟内免重复 API 调用）
-- 用户反馈机制：可标记不相关项目，本会话内自动排除
-- 排序切换：Stars / ⭐/天增速 / 最近更新 / 最新创建
-- ✅ **内置自审机制**：执行完毕后自动加载审计清单，逐条核查 10 步 30+ 项条件，发现遗漏立即补充
+- **输入关键词**，搜索 GitHub 上该领域的 Skill 项目
+- **总表**：按 Star 总数排名 Top 30（质量门槛 ≥ 10⭐）
+- **新发布Skill表**：近 1 个月内发布的项目 Top 30（质量门槛 ≥ 10⭐）
+- 数据指标：发布天数、Star 总数、平均每天 Star 数、最近更新日期、项目地址
+- 每张表均**保存为 .md 文件**并在**对话框同步显示**
+- 排序切换：Star总数 / 平均⭐/天 / 最近更新 / 最新发布
+- 用户反馈：可标记不相关项目，本会话内自动排除
+- 🔍 **内置审查 Skill**：执行完毕后自动审计，确保每一步完整执行
 
 ## 安装
 
@@ -24,27 +22,28 @@ git clone https://github.com/gggghhhhhhhhhhhhhhh/github-skills-search.git `
 
 ## 使用方式
 
-在对话中触发：
-
-> **"使用 $github-skills-search 搜索工具开发相关的 Skills"**
-> **"用 GitHub Skills Search 帮我搜一下数据分析领域"**
-> **"Use $github-skills-search to find video production agent skills"**
+> **"使用 $github-skills-search 搜索视频制作"**
+> **"用 GitHub Skills Search 搜一下数据分析"**
 
 ### 交互流程
 
-1. 你输入一个关键词（任意领域），或不指定走默认搜索
-2. Skill 调 GitHub API 多查询搜索 → 去重 → 过滤 → 计算指标
-3. 输出 Top 30 Markdown 表格 + 🔥 Rising Stars Spotlight
-4. 你可以切换排序或标记不相关结果
-5. ✅ **自动运行内置审计**：核查所有条件是否满足，不满足则补充修正
+1. 你输入一个关键词
+2. 搜索 GitHub → 去重 → 过滤（≥ 10⭐）→ 计算指标
+3. 输出 **总表**（All-time Top 30）+ **新发布Skill表**（近 1 月 Top 30）
+4. 每张表同步保存为 .md 文件
+5. 可切换排序、标记不相关项目
+6. 🔍 自动运行审查 Skill，验证所有步骤
 
-### 自审机制
+## 文件结构
 
-Skill 内置了 `references/audit-checklist.md` 审计清单，覆盖 10 个步骤 30+ 项检查点：
-
-- 每一步执行后自动核查，确保无遗漏
-- 从"是否问了关键词"到"是否提供了深挖选项"全覆盖
-- 发现缺失条件立即修复，保证输出完整规范
+```
+github-skills-search/
+├── SKILL.md             # 主 Skill（10 步工作流）
+├── audit/
+│   └── SKILL.md         # 🔍 审查 Skill
+├── agents/openai.yaml
+└── README.md
+```
 
 ## License
 

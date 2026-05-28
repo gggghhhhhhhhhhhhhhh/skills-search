@@ -1,71 +1,58 @@
 ---
 name: github-skills-search
 description: >
-  Search GitHub for AI agent Skills (skills, plugins, MCP tools) related to a specific research domain.
-  Use when the user wants to: (1) discover trending or rising-star Skills projects on GitHub,
-  (2) find research-related Skills repos for academic writing, scientific computing, literature review,
-  bioinformatics, medical research, or any other domain; (3) get a formatted ranking table of repos
-  with creation date, stars, stars/day, and rising-star indicators.
-  Before running, always ask the user which domain/keyword they want to search.
-  If the user provides no specific domain, default to a broad search but warn
+  Search GitHub for AI agent Skills (skills, plugins, MCP tools) by keyword.
+  Use when the user wants to: (1) get a quick overview of Skills projects on GitHub for any domain,
+  (2) see two ranking tables — all-time Top 30 and recent-month Top 30,
+  (3) discover trending Skills projects with star growth metrics.
+  Before running, always ask the user which keyword they want to search.
+  If the user provides no keyword, default to a broad search but warn
   that this consumes more tokens due to larger result volume.
----
 
+---
 # GitHub Skills Search
 
 ## Workflow
 
-### Step 1: Ask for the search domain
+### Step 1: Ask for the search keyword
 
 Before making any API calls, ask the user:
 
-> "请问你要搜索哪个领域的 Skills？请提供一个关键词（如：single-cell、bioinformatics、medical、NLP、CV、ecology 等）。如果不指定，则默认搜索全部领域（约 5 次 API 调用，消耗更多 token）。"
+> "请问你要搜索哪个领域的 Skills？请提供一个关键词（如：科学写作、数据分析、工具开发、视频制作等）。如果不指定，则默认搜索全部领域（约 5 次 API 调用，消耗更多 token）。"
 
 Wait for the user's response:
-- **If they provide a keyword** -> use it for targeted search (2-3 queries, ~800-1200 tokens for output).
-- **If not** -> warn: "默认搜索会使用 5 个查询词，匹配 6000+ 仓库，消耗约 2000-3000 tokens。建议尽量提供关键词。" Then proceed with default.
+- **If they provide a keyword** -> use it for targeted search.
+- **If not** -> warn about token cost, then proceed with default broad search.
 
 ### Step 2: Session cache
 
-Before calling the API, check if a session-level cache variable exists (e.g., `$script:SkillsSearchCache`).
-If the same keyword was searched within the last 5 minutes, reuse the cached results and skip API calls.
+Before calling the API, check `$script:SkillsSearchCache`. If the same keyword was searched within the last 5 minutes, reuse cached results and skip API calls.
 
 ```powershell
 if ($script:SkillsSearchCache -and $script:SkillsSearchCache.Keyword -eq $keyword -and $script:SkillsSearchCache.Time -gt (Get-Date).AddMinutes(-5)) {
-    Write-Output "使用缓存结果。"
-    $items = $script:SkillsSearchCache.Results
+    $sortedAll = $script:SkillsSearchCache.ResultsAll
+    $sortedNew = $script:SkillsSearchCache.ResultsNew
 }
 ```
 
-After API calls, store results in cache:
+After API calls, store results:
 
 ```powershell
 $script:SkillsSearchCache = @{
-    Keyword = $keyword
-    Time    = Get-Date
-    Results = $allResults
+    Keyword   = $keyword
+    Time      = Get-Date
+    ResultsAll = $sortedAll   # Top 30 all-time
+    ResultsNew = $sortedNew   # Top 30 recent-month
 }
 ```
 
-### Step 3: Determine search queries
+### Step 3: Call GitHub Search API
 
-Based on user input:
+Use 2-3 queries for the user's keyword:
 
-- **User specified a domain** -> Use 2-3 targeted queries:
-  - `"<domain>+skill"`
-  - `"<domain>+research"` (catches repos without "skill" in name)
-  - If results < 50: `"<domain>+agent"` (broader net)
-
-- **User specified no domain (default)** -> Use 5 broad queries:
-  - `"research+skill"`
-  - `"research+agent+skills"`
-  - `"academic+research+skills"`
-  - `"scientific+research+workflow+skill"`
-  - `"科研+skills"`
-
-Each query returns max 30 results. 5 queries = up to 150 raw items deduplicated.
-
-### Step 4: Call GitHub Search API
+```powershell
+$queries = @("$keyword+skill", "$keyword+research", "$keyword+agent")
+```
 
 For each query:
 
@@ -76,158 +63,112 @@ $response = Invoke-WebRequest -Uri $url -UseBasicParsing -TimeoutSec 15 -Headers
 $data = $response.Content | ConvertFrom-Json
 ```
 
-**Rate limit handling:** GitHub API allows 60 requests/hour unauthenticated. Keep queries <= 5. If 403 returned, pause 60s and retry once.
+**Rate limit:** 60 req/h unauthenticated. Keep ≤ 5 queries. If 403, pause 60s and retry once.
 
-Deduplicate by `id` using a hashtable:
+Deduplicate by `id`:
 
 ```powershell
 $allItems = @{}
 foreach ($item in $data.items) { if (-not $allItems.ContainsKey($item.id)) { $allItems[$item.id] = $item } }
 ```
 
-### Step 5: Apply quality gate
+### Step 4: Apply quality gate
 
-Filter repos with `stargazers_count -ge 10`. This removes noise from trivial/unproven projects.
-Keep the item in filtered list for metrics calculation but mark it as "below threshold" for display.
+Filter repos with `stargazers_count -ge 10`.
 
-### Step 6: Apply research filter
+### Step 5: Compute metrics
 
-Apply keyword-based filtering on `description` and `topics` to exclude non-research repos:
+For each repo:
 
 ```powershell
-$researchKeywords = @("research", "science", "academic", "scientific", "paper", "study", "publication",
-                      "实验室", "科研", "学术", "论文", "研究")
-$isResearchRepo = $researchKeywords | Where-Object {
-    ($item.description -and $item.description -match $_) -or
-    ($item.topics -and $item.topics -match $_)
+$created = [DateTime]$item.created_at
+$updated = [DateTime]$item.updated_at
+$daysOld = [Math]::Max(1, [int]($now - $created).TotalDays)
+$starsPerDay = [Math]::Round($item.stargazers_count / $daysOld, 2)
+```
+
+Metrics: **发布天数** (days since creation), **star总数** (total stars), **平均每天star数** (stars/day), **最近更新日期** (last update), **项目地址** (URL).
+
+### Step 6: Generate Table A — 总表 (All-time Top 30)
+
+Filter: stars >= 10. Sort by **star总数** descending. Take top 30.
+
+Save to a Markdown file:
+
+```powershell
+$mdPath = "$env:TEMP\github-skills-search-总表.md"
+"# 🏆 总表 — $keyword Skills（按 Star 总数排名）" | Out-File $mdPath -Encoding utf8
+"" | Out-File $mdPath -Encoding utf8 -Append
+"| Rank | Project | 发布天数 | Star总数 | 平均⭐/天 | 最近更新 | 项目地址 |" | Out-File $mdPath -Encoding utf8 -Append
+"|------|---------|---------|---------|----------|---------|---------|" | Out-File $mdPath -Encoding utf8 -Append
+# ... append each row
+```
+
+Then output the same table in the dialog:
+
+```
+📄 **总表已保存至**: `$mdPath`
+
+| Rank | Project | 发布天数 | Star总数 | 平均⭐/天 | 最近更新 | 项目地址 |
+|------|---------|---------|---------|----------|---------|---------|
+| 1 | ... | ... | ... | ... | ... | ... |
+```
+
+### Step 7: Generate Table B — 新发布Skill表 (Recent-month Top 30)
+
+Filter: stars >= 10 AND created within last 30 days. Sort by **star总数** descending. Take top 30.
+
+Save to a Markdown file:
+
+```powershell
+$mdPath2 = "$env:TEMP\github-skills-search-新发布表.md"
+"# 🆕 新发布Skill表 — $keyword Skills（近 1 个月）" | Out-File $mdPath2 -Encoding utf8
+# ... same format
+```
+
+Then output the same table in the dialog:
+
+```
+📄 **新发布Skill表已保存至**: `$mdPath2`
+
+| Rank | Project | 发布天数 | Star总数 | 平均⭐/天 | 最近更新 | 项目地址 |
+|------|---------|---------|---------|----------|---------|---------|
+| 1 | ... | ... | ... | ... | ... | ... |
+```
+
+**Note:** Both tables are saved as .md files AND shown in the dialog. The .md files serve as persistent records.
+
+### Step 8: Sort toggle
+
+After displaying both tables, offer:
+
+> "📌 排序切换: [1]Star总数 [2]平均⭐/天 [3]最近更新 [4]最新发布"
+
+Re-sort the **cached data** without extra API calls.
+
+### Step 9: User feedback
+
+> "📌 有不相关项目？告诉我序号，本会话内自动排除。"
+
+Track in `$script:ExcludedRepos` by repo id.
+
+### Step 10: Load and run audit
+
+After all steps complete, load the **audit skill** to verify execution:
+
+```powershell
+# Load audit checklist
+$auditPath = "$PSScriptRoot\audit\SKILL.md"
+if (Test-Path $auditPath) {
+    # Follow audit instructions to verify all steps
 }
 ```
 
-If filtering removes too many results, offer user a choice:
-> "当前宽松过滤后剩余 N 个项目。需要切换到严格模式（要求 topic 或 description 明确包含 research/academic/科研 等关键词）吗？"
-
-- **Loose mode** (default): repo matches at least 1 research keyword
-- **Strict mode**: repo description or topics contain >= 2 research keywords
-
-### Step 7: Calculate metrics
-
-```powershell
-$now = Get-Date
-$oneMonthAgo = $now.AddMonths(-1)
-
-# For each repo
-$created = [DateTime]$item.created_at
-$daysOld = [Math]::Max(1, [int]($now - $created).TotalDays)
-$starsPerDay = [Math]::Round($item.stargazers_count / $daysOld, 2)
-
-# Also track recent commit activity (if available via GET /repos/{owner}/{repo}/commits?per_page=1)
-# Extract last_commit_date from item.updated_at as proxy
-$lastCommitDays = [Math]::Floor(($now - [DateTime]$item.updated_at).TotalDays)
-
-# Topics display
-$topicsStr = if ($item.topics -and $item.topics.Count -gt 0) {
-    $item.topics[0..[Math]::Min(4, $item.topics.Count-1)] -join ", "
-} else { "N/A" }
-```
-
-- **Stars/day** = stars / Max(1, days since creation)
-- **Activity score**: days since last update (lower = more active). Use `updated_at` as proxy.
-- **Rising Star flag**: created within last 30 days AND stars/day > median stars/day of Top 30
-- **Median** (not mean) is used as reference line because extreme values (e.g. ECC with 1509/day) would skew the mean.
-
-### Step 8: Output results
-
-Output is strictly **two parts only** — no verbose description list.
-
-#### Part A: 🏆 Top 30 — Stars 排名表
-
-Clean Markdown table:
-
-```
-| Rank | Project | 创建日期 | 最近更新 | Lang | Stars | ⭐/天 | 活跃 | Topics |
-```
-
-- Project: `[owner/name](url)` with 🆕 if ≤ 30 days old
-- 活跃: "今天" / "N天前" / "N月前" from `updated_at`
-- Topics: first 3-5, or "—"
-- **No description listing below the table.**
-
-#### Part B: 🔥 Rising Stars Spotlight
-
-Only repos satisfying BOTH:
-
-1. Created ≤ 30 days ago
-2. stars/day > median stars/day of Top 30
-
-```
-🔥 [owner/name](url) | 创建: yyyy-MM-dd | Stars: N | ⭐/天: N.NN | 简介: ...
-```
-
-If none qualify, show closest 3 candidates with their ⭐/天 vs median.
-
-Calculate median:
-
-```powershell
-$spdList = $sorted | ForEach-Object { $c=[DateTime]$_.created_at; $d=[Math]::Max(1,($now-$c).TotalDays); [Math]::Round($_.stargazers_count/$d,2) } | Sort-Object
-$medianSpd = $spdList[[Math]::Floor($spdList.Count/2)]
-```
-
-#### After both parts, append:
-
-```
-📌 排序切换: [1]Stars [2]⭐/天 [3]最近更新 [4]最新创建
-📌 有不相关项目？告诉我序号，本会话内自动排除。
-📌 深挖某个项目？告诉我序号，可看README/语言/详情。
-```### Step 9: User feedback loop (quality validation)
-
-After displaying results, ask:
-
-> "这些结果中是否有不相关的项目？如果有，请告诉我项目名称或序号，我会记住偏好并过滤掉类似项目。"
-
-Track user's feedback in `$script:ExcludedRepos` hashtable (by repo id or owner/name pattern):
-
-```powershell
-if (-not $script:ExcludedRepos) { $script:ExcludedRepos = @{} }
-$script:ExcludedRepos[$item.id] = $true
-```
-
-On subsequent searches with the same keyword in the same session, exclude these repos automatically.
-
-### Step 10: Offer to deep-dive
-
-After displaying results, offer:
-- Open any repo URL
-- Fetch README summary for a specific repo
-- Show language breakdown or contributor stats for a repo
-- Refine the search with a different keyword
-
-
-### Step 11: Self-audit (built-in quality check)
-
-After completing Steps 1-10, load the built-in audit checklist and verify every condition:
-
-```powershell
-# Load the audit checklist
-$auditPath = "$env:USERPROFILE\.codex\skills\github-skills-search\references\audit-checklist.md"
-$auditContent = Get-Content $auditPath -Encoding utf8 -Raw
-```
-
-Work through each condition in the checklist:
-- Start from **Step 1** and go through **Step 10**.
-- For each checkbox `[ ]`, check whether the search-skill has fulfilled that condition in its current execution.
-- If **any** condition is `☐` (not met), **stop and fix it immediately** before continuing.
-- Only mark the step as ✅ when ALL sub-conditions are verified.
-
-The checklist contains a Quick Summary table at the bottom for fast reference.
-
-After the audit:
-- If all ✅: "✅ 质量审核通过，所有条件满足。"
-- If any fix was applied: "⚠️ 已修复 N 个问题，重新验证通过。"
+The audit skill is located at the `audit/` subdirectory within this skill. Load it and follow its instructions to verify every step was executed correctly and completely. If any step is missing or incomplete, re-execute it before finishing.
 
 ## Notes
 
-- GitHub API is publicly accessible - no authentication needed for basic searches.
-- Prefer PowerShell for API calls (Windows environment).
-- Always respect the quality gate (stars >= 10) unless user explicitly asks to see low-star projects.
-- Cache results by keyword within a session to avoid redundant API calls.
-- Use Markdown table format for output for better human readability.
+- Both tables are output in the dialog AND saved as .md files.
+- Always respect the quality gate (stars >= 10).
+- Cache results by keyword within a session.
+- Use Markdown table format for all output.
