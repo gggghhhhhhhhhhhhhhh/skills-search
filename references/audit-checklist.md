@@ -62,7 +62,7 @@ every condition. If any condition is not met, supplement the missing step immedi
 - [ ] Is the output printed as a **Markdown table** (not Format-Table or plain text)?
 - [ ] Does the table include ALL of these columns: Rank, Project (with link), 创建日期, 最近更新, Lang, Stars, Stars/day, 活跃, Topics?
 - [ ] Are 🆕 markers added for repos created within last 30 days?
-- [ ] Is description truncated to ≤ 150 characters?
+- [ ] No verbose description list below the table? (descriptions only shown on deep-dive)
 
 #### 8B: Rising Stars Spotlight
 - [ ] Is the median stars/day value displayed?
@@ -95,7 +95,7 @@ every condition. If any condition is not met, supplement the missing step immedi
 | 5 | Quality gate (>=10 stars)? | ☐ |
 | 6 | Research filter (loose/strict)? | ☐ |
 | 7 | Metrics correct (stars/day, median)? | ☐ |
-| 8A | Table: Markdown + all columns + dates? | ☐ |
+| 8A | Table: Markdown + all columns + no verbose desc list? | ☐ |
 | 8B | Rising Stars displayed? | ☐ |
 | 8C | Sort toggle offered? | ☐ |
 | 9 | Feedback loop asked? | ☐ |
