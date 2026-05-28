@@ -1,0 +1,13 @@
+﻿interface:
+  display_name: "GitHub Skills Search"
+  short_description: "Search GitHub for AI Skills repos with ranking & rising-star analysis"
+  icon_small: "./assets/small-icon.png"
+  icon_large: "./assets/large-icon.svg"
+  brand_color: "#2DA44E"
+  default_prompt: "Use $github-skills-search to search GitHub for trending AI Skills projects in a specific research domain"
+
+dependencies:
+  tools: []
+
+policy:
+  allow_implicit_invocation: true
