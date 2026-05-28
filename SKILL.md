@@ -142,12 +142,12 @@ Print results as **Markdown tables** for best readability:
 #### Section A: Top 30 by total Stars
 
 ```powershell
-Write-Output "| Rank | Project | Language | Stars | Stars/day | Last Commit | Topics |"
+Write-Output "| Rank | Project | 创建日期 | 最近更新 | Lang | Stars | Stars/day | 活跃 | Topics |"
 Write-Output "|------|---------|----------|-------|-----------|-------------|--------|"
 # only output stars/day for the first 3 as summary
 ```
 
-Columns: Rank | Project (with link) | Language | Stars | Stars/day | Last Commit (days ago) | Rising Star? | Topics (first 5)
+Columns: Rank | Project (with link) | 创建日期 | 最近更新 | Lang | Stars | Stars/day | 活跃 | Topics (first 5)
 
 Truncate description to 150 chars. Only include Language if non-null.
 
@@ -193,6 +193,29 @@ After displaying results, offer:
 - Fetch README summary for a specific repo
 - Show language breakdown or contributor stats for a repo
 - Refine the search with a different keyword
+
+
+### Step 11: Self-audit (built-in quality check)
+
+After completing Steps 1-10, load the built-in audit checklist and verify every condition:
+
+```powershell
+# Load the audit checklist
+$auditPath = "$env:USERPROFILE\.codex\skills\github-skills-search\references\audit-checklist.md"
+$auditContent = Get-Content $auditPath -Encoding utf8 -Raw
+```
+
+Work through each condition in the checklist:
+- Start from **Step 1** and go through **Step 10**.
+- For each checkbox `[ ]`, check whether the search-skill has fulfilled that condition in its current execution.
+- If **any** condition is `☐` (not met), **stop and fix it immediately** before continuing.
+- Only mark the step as ✅ when ALL sub-conditions are verified.
+
+The checklist contains a Quick Summary table at the bottom for fast reference.
+
+After the audit:
+- If all ✅: "✅ 质量审核通过，所有条件满足。"
+- If any fix was applied: "⚠️ 已修复 N 个问题，重新验证通过。"
 
 ## Notes
 
