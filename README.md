@@ -1,4 +1,4 @@
-﻿# GitHub Skills Search
+# Skills Search
 
 快速了解 GitHub 上某个领域相关的 Skill 项目概况。只需输入一个关键词，即可获取两份排名表。
 
@@ -16,13 +16,13 @@
 ## 安装
 
 ```bash
-git clone https://github.com/gggghhhhhhhhhhhhhhh/github-skills-search.git `
-  "$env:USERPROFILE\.codex\skills\github-skills-search"
+git clone https://github.com/gggghhhhhhhhhhhhhhh/skills-search.git `
+  "$env:USERPROFILE\.codex\skills\skills-search"
 ```
 
 ## 使用方式
 
-> **"使用 $github-skills-search 搜索视频制作"**
+> **"使用 $skills-search 搜索视频制作"**
 > **"用 GitHub Skills Search 搜一下数据分析"**
 
 ### 交互流程
@@ -39,8 +39,8 @@ git clone https://github.com/gggghhhhhhhhhhhhhhh/github-skills-search.git `
 运行后在当前目录生成：
 
 ```
-github-skills-search-总表-视频制作.csv
-github-skills-search-新发布表-视频制作.csv
+skills-search-总表-视频制作.csv
+skills-search-新发布表-视频制作.csv
 ```
 
 CSV 文件可用 Excel 直接打开。
@@ -48,7 +48,7 @@ CSV 文件可用 Excel 直接打开。
 ## 文件结构
 
 ```
-github-skills-search/
+skills-search/
 ├── SKILL.md             # 主 Skill（10 步工作流）
 ├── audit/
 │   └── SKILL.md         # 🔍 审查 Skill

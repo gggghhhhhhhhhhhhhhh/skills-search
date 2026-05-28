@@ -1,8 +1,8 @@
-﻿interface:
-  display_name: "GitHub Skills Search"
+interface:
+  display_name: "Skills Search"
   short_description: "Search GitHub for Skills by keyword, two ranking tables"
   brand_color: "#2DA44E"
-  default_prompt: "Use $github-skills-search to search GitHub for Skills in a specific domain by keyword"
+  default_prompt: "Use $skills-search to search GitHub for Skills in a specific domain by keyword"
 
 dependencies:
   tools: []

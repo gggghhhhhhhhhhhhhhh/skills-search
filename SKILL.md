@@ -1,5 +1,5 @@
 ---
-name: github-skills-search
+name: skills-search
 description: >
   Search GitHub for AI agent Skills (skills, plugins, MCP tools) by keyword.
   Use when the user wants to: (1) get a quick overview of Skills projects on GitHub for any domain,
@@ -10,7 +10,7 @@ description: >
   that this consumes more tokens due to larger result volume.
 
 ---
-# GitHub Skills Search
+# Skills Search
 
 ## Workflow
 
@@ -96,7 +96,7 @@ Filter: stars >= 10. Sort by **star总数** descending. Take top 30.
 Save as CSV:
 
 ```powershell
-$csvPath = "$(Get-Location)\github-skills-search-总表-$keyword.csv"
+$csvPath = "$(Get-Location)\skills-search-总表-$keyword.csv"
 "Rank,Project,发布天数,Star总数,平均⭐/天,最近更新,项目地址" | Out-File $csvPath -Encoding utf8
 $i=0; foreach ($item in $sortedAll) { $i++; $c=[DateTime]$item.created_at; $u=[DateTime]$item.updated_at
   $days=[Math]::Floor(($now-$c).TotalDays); $d2=[Math]::Max(1,$days); $spd=[Math]::Round($item.stargazers_count/$d2,2)
@@ -118,7 +118,7 @@ Filter: stars >= 10 AND created within last 30 days. Sort by **star总数** desc
 Save as CSV:
 
 ```powershell
-$csvPath2 = "$(Get-Location)\github-skills-search-新发布表-$keyword.csv"
+$csvPath2 = "$(Get-Location)\skills-search-新发布表-$keyword.csv"
 "Rank,Project,发布天数,Star总数,平均⭐/天,最近更新,项目地址" | Out-File $csvPath2 -Encoding utf8
 $i=0; foreach ($item in $sortedNew) { $i++; $c=[DateTime]$item.created_at; $u=[DateTime]$item.updated_at
   $days=[Math]::Floor(($now-$c).TotalDays); $d2=[Math]::Max(1,$days); $spd=[Math]::Round($item.stargazers_count/$d2,2)

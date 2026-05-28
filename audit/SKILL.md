@@ -1,13 +1,13 @@
 ---
-name: github-skills-search-audit
+name: skills-search-audit
 description: >
-  Quality assurance audit for the github-skills-search skill.
-  Use after github-skills-search completes its 10-step workflow to verify
+  Quality assurance audit for the skills-search skill.
+  Use after skills-search completes its 10-step workflow to verify
   every condition is met. Load this skill when the main skill finishes execution
   to check for missing or incomplete steps. If any step fails, re-execute it.
 ---
 
-# Audit — github-skills-search
+# Audit — skills-search
 
 ## Instructions
 
