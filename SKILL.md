@@ -137,41 +137,48 @@ $topicsStr = if ($item.topics -and $item.topics.Count -gt 0) {
 
 ### Step 8: Output results
 
-Print results as **Markdown tables** for best readability:
+Output is strictly **two parts only** — no verbose description list.
 
-#### Section A: Top 30 by total Stars
+#### Part A: 🏆 Top 30 — Stars 排名表
 
-```powershell
-Write-Output "| Rank | Project | 创建日期 | 最近更新 | Lang | Stars | Stars/day | 活跃 | Topics |"
-Write-Output "|------|---------|----------|-------|-----------|-------------|--------|"
-# only output stars/day for the first 3 as summary
+Clean Markdown table:
+
+```
+| Rank | Project | 创建日期 | 最近更新 | Lang | Stars | ⭐/天 | 活跃 | Topics |
 ```
 
-Columns: Rank | Project (with link) | 创建日期 | 最近更新 | Lang | Stars | Stars/day | 活跃 | Topics (first 5)
+- Project: `[owner/name](url)` with 🆕 if ≤ 30 days old
+- 活跃: "今天" / "N天前" / "N月前" from `updated_at`
+- Topics: first 3-5, or "—"
+- **No description listing below the table.**
 
-Truncate description to 150 chars. Only include Language if non-null.
+#### Part B: 🔥 Rising Stars Spotlight
 
-#### Section B: Rising Stars Spotlight
+Only repos satisfying BOTH:
 
-Only repos meeting: created < 30 days AND stars/day > median stars/day.
+1. Created ≤ 30 days ago
+2. stars/day > median stars/day of Top 30
 
-```powershell
-$medianSpd = ($sorted | ForEach-Object {
-    $c=[DateTime]$_.created_at; $d=[Math]::Max(1,($now-$c).TotalDays); $_.stargazers_count/$d
-} | Sort-Object)[[Math]::Floor($sorted.Count/2)]
+```
+🔥 [owner/name](url) | 创建: yyyy-MM-dd | Stars: N | ⭐/天: N.NN | 简介: ...
 ```
 
-If no repos qualify, state clearly and list the top 3 closest candidates with their stars/day vs median.
+If none qualify, show closest 3 candidates with their ⭐/天 vs median.
 
-#### Section C: Sort toggle offer
+Calculate median:
 
-After displaying default view, offer the user:
+```powershell
+$spdList = $sorted | ForEach-Object { $c=[DateTime]$_.created_at; $d=[Math]::Max(1,($now-$c).TotalDays); [Math]::Round($_.stargazers_count/$d,2) } | Sort-Object
+$medianSpd = $spdList[[Math]::Floor($spdList.Count/2)]
+```
 
-> "需要切换排序方式吗？可选： [1] Stars 总量（当前）[2] Stars/天增速 [3] 最近更新 [4] 最新创建"
+#### After both parts, append:
 
-If user picks an alternative sort, re-sort the existing cached data and re-display without API calls.
-
-### Step 9: User feedback loop (quality validation)
+```
+📌 排序切换: [1]Stars [2]⭐/天 [3]最近更新 [4]最新创建
+📌 有不相关项目？告诉我序号，本会话内自动排除。
+📌 深挖某个项目？告诉我序号，可看README/语言/详情。
+```### Step 9: User feedback loop (quality validation)
 
 After displaying results, ask:
 
